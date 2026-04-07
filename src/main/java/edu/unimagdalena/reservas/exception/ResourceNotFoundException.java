@@ -1,0 +1,10 @@
+package edu.unimagdalena.reservas.exception;
+
+public class ResourceNotFoundException extends RuntimeException {
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
+    public ResourceNotFoundException(String resource, Long id) {
+        super("%s with id %d not found".formatted(resource, id));
+    }
+}
