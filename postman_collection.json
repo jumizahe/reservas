@@ -1,0 +1,450 @@
+{
+  "info": {
+    "name": "Sistema de Reservas de Citas Médicas",
+    "description": "Colección de endpoints para probar el API del sistema de reservas",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Pacientes",
+      "item": [
+        {
+          "name": "Crear paciente",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/patients",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"documentNumber\": \"1234567890\",\n  \"fullName\": \"Juan Pérez\",\n  \"email\": \"juan.perez@email.com\",\n  \"phone\": \"+573001234567\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener paciente por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/patients/1"
+          }
+        },
+        {
+          "name": "Listar pacientes (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"}
+              ]
+            },
+            "raw": "{{baseUrl}}/api/patients"
+          }
+        },
+        {
+          "name": "Actualizar paciente",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/patients/1",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Juan Pérez Updated\",\n  \"email\": \"juan.updated@email.com\",\n  \"phone\": \"+573009999999\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Especialidades",
+      "item": [
+        {
+          "name": "Crear especialidad",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/specialties",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Cardiología\",\n  \"description\": \"Especialidad del corazón\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener especialidad por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/specialties/1"
+          }
+        },
+        {
+          "name": "Listar especialidades",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/specialties"
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Doctores",
+      "item": [
+        {
+          "name": "Crear doctor",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/doctors",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. García\",\n  \"email\": \"dr.garcia@hospital.com\",\n  \"licenseNumber\": \"MED-001\",\n  \"specialtyId\": 1\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener doctor por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/doctors/1"
+          }
+        },
+        {
+          "name": "Listar doctores",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"}
+              ],
+              "raw": "{{baseUrl}}/api/doctors"
+            }
+          }
+        },
+        {
+          "name": "Listar doctores por especialidad",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/doctors/by-specialty/1"
+          }
+        },
+        {
+          "name": "Actualizar doctor",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/doctors/1",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Dr. García Updated\",\n  \"email\": \"dr.garcia.updated@hospital.com\",\n  \"specialtyId\": 1,\n  \"active\": true\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Consultorios",
+      "item": [
+        {
+          "name": "Crear consultorio",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/offices",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Consultorio 101\",\n  \"location\": \"Piso 1, Ala Norte\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener consultorio por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/offices/1"
+          }
+        },
+        {
+          "name": "Listar consultorios",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/offices"
+          }
+        },
+        {
+          "name": "Actualizar consultorio",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/offices/1",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Consultorio 101 Updated\",\n  \"location\": \"Piso 2\",\n  \"status\": \"AVAILABLE\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "5. Tipos de Cita",
+      "item": [
+        {
+          "name": "Crear tipo de cita",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/appointment-types",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Consulta General\",\n  \"durationMinutes\": 30\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener tipo de cita por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointment-types/1"
+          }
+        },
+        {
+          "name": "Listar tipos de cita",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointment-types"
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Citas",
+      "item": [
+        {
+          "name": "Crear cita",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/appointments",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientId\": 1,\n  \"doctorId\": 1,\n  \"officeId\": 1,\n  \"appointmentTypeId\": 1,\n  \"startAt\": \"2026-04-15T09:00:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener cita por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/appointments/1"
+          }
+        },
+        {
+          "name": "Listar citas (paginado)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "page", "value": "0"},
+                {"key": "size", "value": "10"}
+              ],
+              "raw": "{{baseUrl}}/api/appointments"
+            }
+          }
+        },
+        {
+          "name": "Confirmar cita",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/appointments/1/confirm"
+          }
+        },
+        {
+          "name": "Cancelar cita",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/appointments/1/cancel",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellationReason\": \"Paciente pidió cambio de horario\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Completar cita",
+          "request": {
+            "method": "PUT",
+            "url": {
+              "query": [
+                {"key": "observations", "value": "Paciente presentó síntomas de alergia"}
+              ],
+              "raw": "{{baseUrl}}/api/appointments/1/complete"
+            }
+          }
+        },
+        {
+          "name": "Marcar como no presentados",
+          "request": {
+            "method": "PUT",
+            "url": "{{baseUrl}}/api/appointments/1/no-show"
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Horarios de Doctor",
+      "item": [
+        {
+          "name": "Crear horario",
+          "request": {
+            "method": "POST",
+            "url": "{{baseUrl}}/api/doctor-schedules",
+            "header": [
+              {"key": "Content-Type", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"doctorId\": 1,\n  \"dayOfWeek\": \"MONDAY\",\n  \"startTime\": \"08:00\",\n  \"endTime\": \"12:00\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Obtener horario por ID",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/doctor-schedules/1"
+          }
+        },
+        {
+          "name": "Listar horarios por doctor",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/doctor-schedules/doctor/1"
+          }
+        },
+        {
+          "name": "Eliminar horario",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/doctor-schedules/1"
+          }
+        }
+      ]
+    },
+    {
+      "name": "8. Disponibilidad",
+      "item": [
+        {
+          "name": "Verificar disponibilidad de doctor",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "doctorId", "value": "1"},
+                {"key": "date", "value": "2026-04-15"}
+              ],
+              "raw": "{{baseUrl}}/api/availability/doctor"
+            }
+          }
+        },
+        {
+          "name": "Verificar disponibilidad de consultorio",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "officeId", "value": "1"},
+                {"key": "date", "value": "2026-04-15"}
+              ],
+              "raw": "{{baseUrl}}/api/availability/office"
+            }
+          }
+        },
+        {
+          "name": "Buscar slots disponibles",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "doctorId", "value": "1"},
+                {"key": "date", "value": "2026-04-15"},
+                {"key": "appointmentTypeId", "value": "1"}
+              ],
+              "raw": "{{baseUrl}}/api/availability/slots"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "9. Reportes",
+      "item": [
+        {
+          "name": "Pacientes no presentados",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "startDate", "value": "2026-01-01"},
+                {"key": "endDate", "value": "2026-12-31"}
+              ],
+              "raw": "{{baseUrl}}/api/reports/no-show-patients"
+            }
+          }
+        },
+        {
+          "name": "Ocupación de consultorios",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "startDate", "value": "2026-04-01"},
+                {"key": "endDate", "value": "2026-04-30"}
+              ],
+              "raw": "{{baseUrl}}/api/reports/office-occupancy"
+            }
+          }
+        },
+        {
+          "name": "Productividad de doctores",
+          "request": {
+            "method": "GET",
+            "url": {
+              "query": [
+                {"key": "startDate", "value": "2026-04-01"},
+                {"key": "endDate", "value": "2026-04-30"}
+              ],
+              "raw": "{{baseUrl}}/api/reports/doctor-productivity"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
