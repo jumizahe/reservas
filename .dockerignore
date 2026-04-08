@@ -1,0 +1,7 @@
+# Excluir archivos innecesarios del contexto de build Docker
+target/
+*.iml
+.idea/
+.git/
+.gitignore
+*.md

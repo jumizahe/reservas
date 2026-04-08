@@ -49,6 +49,7 @@ public class AppointmentController {
         return ResponseEntity.ok(service.cancel(id, req));
     }
 
+
     @PutMapping("/{id}/complete")
     public ResponseEntity<AppointmentResponse> complete(@PathVariable Long id,
                                                         @RequestParam(required = false) String observations) {

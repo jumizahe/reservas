@@ -1,0 +1,49 @@
+version: '3.9'
+
+services:
+
+  # ─────────────────────────────────────────────
+  # Base de datos PostgreSQL
+  # ─────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: reservas_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       reservas2025
+      POSTGRES_USER:     postgres
+      POSTGRES_PASSWORD: Colombia2020*
+    ports:
+      - "5432:5432"
+    volumes:
+      - reservas_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U reservas2025 -d reservas2025"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ─────────────────────────────────────────────
+  # Aplicación Spring Boot
+  # ─────────────────────────────────────────────
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: reservas_app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL:      jdbc:postgresql://postgres:5432/reservas2025
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Colombia2020*
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL:           "false"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  reservas_pgdata:
+    driver: local
