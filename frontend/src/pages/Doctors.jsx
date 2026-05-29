@@ -1,20 +1,74 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useCallback } from 'react'
 import { listDoctors, createDoctor, updateDoctor } from '../api/doctors'
+import Pagination from '../components/Pagination'
 import dayjs from 'dayjs'
 
-function PaginationSimple({ page, totalPages, onPage }) {
+function DoctorForm({ doctor, specialties, onSave, onCancel }) {
+  const [form, setForm] = useState({
+    fullName: doctor?.fullName || '',
+    email: doctor?.email || '',
+    licenseNumber: doctor?.licenseNumber || '',
+    specialtyId: doctor?.specialtyId || '',
+  })
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState(null)
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (!form.fullName || !form.email || !form.specialtyId) {
+      setError('Completa todos los campos obligatorios')
+      return
+    }
+    setSaving(true)
+    setError(null)
+    try {
+      await onSave({ ...form, specialtyId: Number(form.specialtyId) })
+    } catch (err) {
+      setError(err.message || 'Error al guardar')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   return (
-    <nav>
-      <ul className="pagination">
-        <li className={`page-item ${page <= 0 ? 'disabled' : ''}`}>
-          <button className="page-link" onClick={() => onPage(page - 1)}>Anterior</button>
-        </li>
-        <li className="page-item disabled"><span className="page-link">{page + 1} / {totalPages}</span></li>
-        <li className={`page-item ${page + 1 >= totalPages ? 'disabled' : ''}`}>
-          <button className="page-link" onClick={() => onPage(page + 1)}>Siguiente</button>
-        </li>
-      </ul>
-    </nav>
+    <div className="card mb-4">
+      <div className="card-header-custom">
+        <h3>{doctor ? 'Editar doctor' : 'Nuevo doctor'}</h3>
+        <button className="btn btn-sm btn-ghost" onClick={onCancel}>Cancelar</button>
+      </div>
+      <div className="card-body-custom">
+        {error && <div className="alert alert-danger">{error}</div>}
+        <form onSubmit={handleSubmit}>
+          <div className="row g-3">
+            <div className="col-md-6">
+              <label className="form-label">Nombre completo *</label>
+              <input className="form-control" value={form.fullName} onChange={e => setForm({ ...form, fullName: e.target.value })} required />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">Email *</label>
+              <input className="form-control" type="email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} required />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">Licencia</label>
+              <input className="form-control" value={form.licenseNumber} onChange={e => setForm({ ...form, licenseNumber: e.target.value })} />
+            </div>
+            <div className="col-md-6">
+              <label className="form-label">Especialidad *</label>
+              <select className="form-select" value={form.specialtyId} onChange={e => setForm({ ...form, specialtyId: e.target.value })} required>
+                <option value="">Seleccionar especialidad</option>
+                {specialties.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="d-flex gap-2 mt-4">
+            <button className="btn btn-primary" type="submit" disabled={saving}>
+              {saving ? 'Guardando...' : 'Guardar'}
+            </button>
+            <button className="btn btn-ghost" type="button" onClick={onCancel}>Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
   )
 }
 
@@ -23,125 +77,156 @@ export default function Doctors() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [editor, setEditor] = useState(null)
-  const [f, setF] = useState({ fullName: '', email: '', licenseNumber: '', specialtyId: '' })
+  const [specialties, setSpecialties] = useState([])
   const [search, setSearch] = useState('')
 
-  const fetch = async (page = 0) => {
+  const loadDoctors = useCallback(async (page = 0) => {
     setLoading(true)
     setError(null)
     try {
-      // If there's a search term, fetch a larger page and filter client-side
-      if (search && search.trim().length > 0) {
-        const res = await listDoctors(0, 100)
-        const items = res.data.content.filter(d =>
-          (d.fullName || '').toLowerCase().includes(search.toLowerCase()) ||
-          (d.email || '').toLowerCase().includes(search.toLowerCase())
+      if (search.trim()) {
+        const res = await listDoctors(0, 200)
+        const filtered = res.data.content.filter(d =>
+          d.fullName?.toLowerCase().includes(search.toLowerCase()) ||
+          d.email?.toLowerCase().includes(search.toLowerCase())
         )
-        setData({ content: items, number: 0, totalPages: 1 })
+        setData({ content: filtered, number: 0, totalPages: 1 })
       } else {
         const res = await listDoctors(page, 10)
         setData(res.data)
       }
     } catch (e) {
-      setError(e.message || JSON.stringify(e))
+      setError(e.message || 'Error al cargar doctores')
     } finally {
       setLoading(false)
     }
-  }
+  }, [search])
 
-  useEffect(() => { fetch(0) }, [])
+  useEffect(() => { loadDoctors(0) }, [loadDoctors])
 
   useEffect(() => {
-    if (editor?.mode === 'edit' && editor.doctor) {
-      const d = editor.doctor
-      setF({ fullName: d.fullName || '', email: d.email || '', licenseNumber: d.licenseNumber || '', specialtyId: d.specialtyId || '' })
+    fetch('/api/specialties').then(r => r.json()).then(setSpecialties).catch(() => {})
+  }, [])
+
+  const handleSave = async (payload) => {
+    if (editor.mode === 'create') await createDoctor(payload)
+    else await updateDoctor(editor.doctor.id, payload)
+    setEditor(null)
+    await loadDoctors(data.number)
+  }
+
+  const handleToggleActive = async (doctor) => {
+    const willActivate = !doctor.active
+    if (!window.confirm(willActivate ? '¿Activar doctor?' : '¿Desactivar doctor?')) return
+    try {
+      await updateDoctor(doctor.id, { active: willActivate })
+      await loadDoctors(data.number)
+    } catch (e) {
+      setError(e.message || 'Error al actualizar')
     }
-    if (editor?.mode === 'create') setF({ fullName: '', email: '', licenseNumber: '', specialtyId: '' })
-  }, [editor])
+  }
 
   return (
     <div>
-      <h2 className="h5 mb-3">Doctores</h2>
-      <div className="mb-3 d-flex gap-2">
-        <div className="flex-grow-1">
-          <input className="form-control" placeholder="Buscar por nombre o email" value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
+      <div className="page-header d-flex justify-content-between align-items-start">
         <div>
-          <button className="btn btn-sm btn-secondary" onClick={() => fetch(0)}>Buscar</button>
+          <h2>Doctores</h2>
+          <p>Gestión de doctores y especialidades</p>
         </div>
-        <div>
-          <button className="btn btn-sm btn-primary" onClick={() => setEditor({ mode: 'create', doctor: null })}>Nuevo Doctor</button>
-        </div>
+        <button className="btn btn-primary" onClick={() => setEditor({ mode: 'create' })}>
+          {'+ Nuevo Doctor'}
+        </button>
       </div>
+
       {editor && (
-        <div className="card mb-3 p-3">
-          <h6>{editor.mode === 'create' ? 'Crear doctor' : 'Editar doctor'}</h6>
-          <form onSubmit={async (e) => {
-            e.preventDefault()
-            try {
-              const payload = { fullName: f.fullName, email: f.email, licenseNumber: f.licenseNumber, specialtyId: Number(f.specialtyId) }
-              if (editor.mode === 'create') await createDoctor(payload)
-              else await updateDoctor(editor.doctor.id, payload)
-              setEditor(null)
-              fetch(data.number)
-            } catch (err) { alert(err.message || JSON.stringify(err)) }
-          }}>
-            <div className="row">
-              <div className="col-md-6 mb-2"><input className="form-control" placeholder="Nombre completo" value={f.fullName} onChange={e => setF({ ...f, fullName: e.target.value })} required /></div>
-              <div className="col-md-6 mb-2"><input className="form-control" placeholder="Email" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} required /></div>
-            </div>
-            <div className="row">
-              <div className="col-md-6 mb-2"><input className="form-control" placeholder="Número de licencia" value={f.licenseNumber} onChange={e => setF({ ...f, licenseNumber: e.target.value })} /></div>
-              <div className="col-md-6 mb-2"><input className="form-control" placeholder="Especialidad (id)" value={f.specialtyId} onChange={e => setF({ ...f, specialtyId: e.target.value })} required /></div>
-            </div>
-            <div>
-              <button className="btn btn-primary btn-sm me-2" type="submit">Guardar</button>
-              <button type="button" className="btn btn-secondary btn-sm" onClick={() => setEditor(null)}>Cancelar</button>
-            </div>
-          </form>
+        <DoctorForm
+          doctor={editor.mode === 'edit' ? editor.doctor : null}
+          specialties={specialties}
+          onSave={handleSave}
+          onCancel={() => setEditor(null)}
+        />
+      )}
+
+      {error && (
+        <div className="alert alert-danger d-flex align-items-center justify-content-between mb-3">
+          <span>{error}</span>
+          <button className="btn btn-sm btn-ghost" onClick={() => setError(null)}>Cerrar</button>
         </div>
       )}
-      {error && <div className="alert alert-danger">{error}</div>}
-      {loading ? <div>Cargando...</div> : (
-        <>
-          <table className="table table-sm">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Especialidad</th>
-                <th>Activo</th>
-                <th>Creado</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.content.map(d => (
-                <tr key={d.id}>
-                  <td>{d.id}</td>
-                  <td>{d.fullName}</td>
-                  <td>{d.email}</td>
-                  <td>{d.specialtyName}</td>
-                  <td>{d.active ? 'Sí' : 'No'}</td>
-                  <td>{d.createdAt ? dayjs(d.createdAt).format('YYYY-MM-DD') : ''}</td>
-                  <td>
-                    <button className="btn btn-sm btn-outline-primary" onClick={() => setEditor({ mode: 'edit', doctor: d })}>Editar</button>
-                    <button className={"btn btn-sm ms-2 " + (d.active ? 'btn-outline-danger' : 'btn-outline-success')} onClick={async () => {
-                      const willActivate = !d.active
-                      if (!window.confirm(willActivate ? 'Activar doctor?' : 'Desactivar doctor?')) return
-                      try {
-                        await updateDoctor(d.id, { active: willActivate })
-                        fetch(data.number)
-                      } catch (err) { alert(err.message || JSON.stringify(err)) }
-                    }}>{d.active ? 'Desactivar' : 'Activar'}</button>
-                  </td>
+
+      <div className="filters-bar">
+        <div className="d-flex gap-2">
+          <input
+            className="form-control"
+            placeholder="Buscar por nombre o email..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && loadDoctors(0)}
+          />
+          <button className="btn btn-ghost" onClick={() => loadDoctors(0)}>Buscar</button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div className="spinner-container"><div className="spinner" /></div>
+      ) : data.content.length === 0 ? (
+        <div className="card">
+          <div className="empty-state">
+            <div className="empty-icon">{'\u{1FA7A}'}</div>
+            <p>No se encontraron doctores</p>
+          </div>
+        </div>
+      ) : (
+        <div className="card">
+          <div style={{ overflowX: 'auto' }}>
+            <table className="table table-hover">
+              <thead>
+                <tr>
+                  <th>Nombre</th>
+                  <th>Email</th>
+                  <th>Licencia</th>
+                  <th>Especialidad</th>
+                  <th>Estado</th>
+                  <th>Creado</th>
+                  <th style={{ textAlign: 'right' }}>Acciones</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-          <PaginationSimple page={data.number} totalPages={data.totalPages} onPage={(p) => fetch(p)} />
-        </>
+              </thead>
+              <tbody>
+                {data.content.map(d => (
+                  <tr key={d.id}>
+                    <td style={{ fontWeight: 500 }}>{d.fullName}</td>
+                    <td>{d.email}</td>
+                    <td>{d.licenseNumber || '-'}</td>
+                    <td>{d.specialtyName}</td>
+                    <td>
+                      <span className={`badge-status ${d.active ? 'badge-confirmed' : 'badge-cancelled'}`}>
+                        {d.active ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </td>
+                    <td>{d.createdAt ? dayjs(d.createdAt).format('DD/MM/YYYY') : '-'}</td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div className="d-flex gap-1 justify-content-end">
+                        <button className="btn btn-sm btn-ghost" onClick={() => setEditor({ mode: 'edit', doctor: d })}>
+                          Editar
+                        </button>
+                        <button
+                          className="btn btn-sm btn-ghost"
+                          style={{ color: d.active ? 'var(--danger)' : 'var(--success)' }}
+                          onClick={() => handleToggleActive(d)}
+                        >
+                          {d.active ? 'Desactivar' : 'Activar'}
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="d-flex justify-content-center py-3" style={{ borderTop: '1px solid var(--border)' }}>
+            <Pagination page={data.number} totalPages={data.totalPages} onPage={loadDoctors} />
+          </div>
+        </div>
       )}
     </div>
   )

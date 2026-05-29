@@ -21,9 +21,11 @@ public class ReportServiceImpl implements ReportService {
     private final AppointmentRepository appointmentRepo;
 
     @Override
-    public List<OfficeOccupancyResponse> officeOccupancy(LocalDateTime from, LocalDateTime to) {
-        return appointmentRepo.findOfficeOccupancy(from, to)
-                .stream()
+    public List<OfficeOccupancyResponse> officeOccupancy(LocalDateTime from, LocalDateTime to, Long specialtyId) {
+        List<Object[]> rows = (specialtyId != null)
+                ? appointmentRepo.findOfficeOccupancyBySpecialty(from, to, specialtyId)
+                : appointmentRepo.findOfficeOccupancy(from, to);
+        return rows.stream()
                 .map(row -> new OfficeOccupancyResponse(
                         ((Number) row[0]).longValue(),
                         (String) row[1],
@@ -32,9 +34,11 @@ public class ReportServiceImpl implements ReportService {
     }
 
     @Override
-    public List<DoctorProductivityResponse> doctorProductivity(LocalDateTime from, LocalDateTime to) {
-        return appointmentRepo.findDoctorProductivity(from, to)
-                .stream()
+    public List<DoctorProductivityResponse> doctorProductivity(LocalDateTime from, LocalDateTime to, Long specialtyId) {
+        List<Object[]> rows = (specialtyId != null)
+                ? appointmentRepo.findDoctorProductivityBySpecialty(from, to, specialtyId)
+                : appointmentRepo.findDoctorProductivity(from, to);
+        return rows.stream()
                 .map(row -> new DoctorProductivityResponse(
                         ((Number) row[0]).longValue(),
                         (String) row[1],

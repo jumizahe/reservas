@@ -8,7 +8,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public interface ReportService {
-    List<OfficeOccupancyResponse>    officeOccupancy(LocalDateTime from, LocalDateTime to);
-    List<DoctorProductivityResponse> doctorProductivity(LocalDateTime from, LocalDateTime to);
+    List<OfficeOccupancyResponse>    officeOccupancy(LocalDateTime from, LocalDateTime to, Long specialtyId);
+    List<DoctorProductivityResponse> doctorProductivity(LocalDateTime from, LocalDateTime to, Long specialtyId);
     List<NoShowPatientResponse>      topNoShowPatients(LocalDateTime from, LocalDateTime to, int limit);
 }

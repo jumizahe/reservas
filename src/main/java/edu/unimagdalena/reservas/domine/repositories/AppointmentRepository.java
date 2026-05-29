@@ -115,6 +115,22 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("from") LocalDateTime from,
             @Param("to")   LocalDateTime to);
 
+    /** Ranking de doctores por citas completadas, filtrado por especialidad */
+    @Query("""
+           SELECT d.id, d.fullName, d.specialty.name, COUNT(a) as total
+           FROM Appointment a
+           JOIN a.doctor d
+           WHERE a.status = 'COMPLETED'
+             AND a.startAt BETWEEN :from AND :to
+             AND d.specialty.id = :specialtyId
+           GROUP BY d.id, d.fullName, d.specialty.name
+           ORDER BY COUNT(a) DESC
+           """)
+    List<Object[]> findDoctorProductivityBySpecialty(
+            @Param("from") LocalDateTime from,
+            @Param("to")   LocalDateTime to,
+            @Param("specialtyId") Long specialtyId);
+
     /** Ocupación de consultorios por rango de fechas */
     @Query("""
            SELECT o.id, o.name, COUNT(a) as total
@@ -128,6 +144,23 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Object[]> findOfficeOccupancy(
             @Param("from") LocalDateTime from,
             @Param("to")   LocalDateTime to);
+
+    /** Ocupación de consultorios, filtrado por especialidad (vía doctor) */
+    @Query("""
+           SELECT o.id, o.name, COUNT(a) as total
+           FROM Appointment a
+           JOIN a.office o
+           JOIN a.doctor d
+           WHERE a.status NOT IN ('CANCELLED')
+             AND a.startAt BETWEEN :from AND :to
+             AND d.specialty.id = :specialtyId
+           GROUP BY o.id, o.name
+           ORDER BY COUNT(a) DESC
+           """)
+    List<Object[]> findOfficeOccupancyBySpecialty(
+            @Param("from") LocalDateTime from,
+            @Param("to")   LocalDateTime to,
+            @Param("specialtyId") Long specialtyId);
 
     /** Pacientes con más NO_SHOW en un período */
     @Query("""

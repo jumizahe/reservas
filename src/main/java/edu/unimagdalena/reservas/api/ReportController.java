@@ -22,15 +22,17 @@ public class ReportController {
     @GetMapping("/office-occupancy")
     public ResponseEntity<List<OfficeOccupancyResponse>> officeOccupancy(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
-        return ResponseEntity.ok(service.officeOccupancy(from, to));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(required = false) Long specialtyId) {
+        return ResponseEntity.ok(service.officeOccupancy(from, to, specialtyId));
     }
 
     @GetMapping("/doctor-productivity")
     public ResponseEntity<List<DoctorProductivityResponse>> doctorProductivity(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
-        return ResponseEntity.ok(service.doctorProductivity(from, to));
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(required = false) Long specialtyId) {
+        return ResponseEntity.ok(service.doctorProductivity(from, to, specialtyId));
     }
 
     @GetMapping("/no-show-patients")
