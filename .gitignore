@@ -1,0 +1,48 @@
+# Compiled class files
+target/
+*.class
+
+# Log files
+*.log
+*.err
+backend_run.out
+frontend_dev.out
+
+# Package files
+*.jar
+*.war
+*.ear
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE - IntelliJ
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# IDE - Eclipse
+.classpath
+.factorypath
+.project
+.settings/
+
+# IDE - VS Code
+.vscode/
+
+# Node.js
+node_modules/
+frontend/dist/
+
+# Build output in static
+src/main/resources/static/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Environment
+.env.local
