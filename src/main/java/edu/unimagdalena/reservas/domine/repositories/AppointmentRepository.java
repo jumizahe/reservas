@@ -176,4 +176,16 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
             @Param("from") LocalDateTime from,
             @Param("to")   LocalDateTime to,
             Pageable pageable);
+
+    /** Contar citas por estado en un período */
+    @Query("""
+           SELECT a.status, COUNT(a)
+           FROM Appointment a
+           WHERE a.startAt BETWEEN :from AND :to
+           GROUP BY a.status
+           ORDER BY COUNT(a) DESC
+           """)
+    List<Object[]> countByStatus(
+            @Param("from") LocalDateTime from,
+            @Param("to")   LocalDateTime to);
 }

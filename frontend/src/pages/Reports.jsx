@@ -2,11 +2,12 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react'
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'
 import { Bar } from 'react-chartjs-2'
 import dayjs from 'dayjs'
-import { getDoctorProductivity, getOfficeOccupancy, getNoShowPatients, getSpecialties } from '../api/reports'
+import { getDoctorProductivity, getOfficeOccupancy, getNoShowPatients, getSpecialties, getAppointmentsByStatus } from '../api/reports'
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend)
 
 const TABS = [
+  { key: 'appointments', label: 'Citas', icon: '\u{1F4C5}' },
   { key: 'doctors', label: 'Doctores', icon: '\u{1FA7A}' },
   { key: 'offices', label: 'Consultorios', icon: '\u{1F3E5}' },
   { key: 'noshows', label: 'No-Shows', icon: '\u{26A0}' },
@@ -120,6 +121,7 @@ export default function Reports() {
   const [doctorData, setDoctorData] = useState([])
   const [officeData, setOfficeData] = useState([])
   const [noShowData, setNoShowData] = useState([])
+  const [statusData, setStatusData] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -138,11 +140,13 @@ export default function Reports() {
       getDoctorProductivity(from, to, specId),
       getOfficeOccupancy(from, to, specId),
       getNoShowPatients(from, to, 10),
+      getAppointmentsByStatus(from, to),
     ])
-      .then(([doctors, offices, noShow]) => {
+      .then(([doctors, offices, noShow, statuses]) => {
         setDoctorData(doctors.data)
         setOfficeData(offices.data)
         setNoShowData(noShow.data)
+        setStatusData(statuses.data)
       })
       .catch(() => setError('Error al cargar los reportes. Verifica la conexión con el servidor.'))
       .finally(() => setLoading(false))
@@ -154,6 +158,23 @@ export default function Reports() {
   const totalOffices = useMemo(() => officeData.length, [officeData])
   const totalCompleted = useMemo(() => doctorData.reduce((s, d) => s + d.completedAppointments, 0), [doctorData])
   const totalNoShows = useMemo(() => noShowData.reduce((s, d) => s + d.noShowCount, 0), [noShowData])
+  const totalAppointments = useMemo(() => statusData.reduce((s, d) => s + d.count, 0), [statusData])
+
+  const STATUS_LABELS = {
+    SCHEDULED: { label: 'Programada', class: 'badge-scheduled' },
+    CONFIRMED: { label: 'Confirmada', class: 'badge-confirmed' },
+    COMPLETED: { label: 'Completada', class: 'badge-completed' },
+    CANCELLED: { label: 'Cancelada', class: 'badge-cancelled' },
+    NO_SHOW: { label: 'No-show', class: 'badge-noshow' },
+  }
+
+  const statusColumns = [
+    { key: 'status', label: 'Estado', render: (val) => {
+      const info = STATUS_LABELS[val] || { label: val, class: '' }
+      return <span className={`badge-status ${info.class}`}>{info.label}</span>
+    }},
+    { key: 'count', label: 'Cantidad', align: 'right' },
+  ]
 
   const doctorColumns = [
     { key: 'doctorName', label: 'Doctor' },
@@ -208,13 +229,13 @@ export default function Reports() {
 
       <div className="row g-3 mb-4">
         <div className="col-md-3">
-          <StatCard label="Doctores activos" value={totalDoctors} color="var(--primary)" />
+          <StatCard label="Total citas" value={totalAppointments} color="var(--primary)" />
         </div>
         <div className="col-md-3">
-          <StatCard label="Consultorios" value={totalOffices} color="var(--success)" />
+          <StatCard label="Citas completadas" value={totalCompleted} color="var(--success)" />
         </div>
         <div className="col-md-3">
-          <StatCard label="Citas completadas" value={totalCompleted} color="var(--info)" />
+          <StatCard label="Consultorios" value={totalOffices} color="var(--info)" />
         </div>
         <div className="col-md-3">
           <StatCard label="Total inasistencias" value={totalNoShows} color="var(--danger)" />
@@ -238,6 +259,25 @@ export default function Reports() {
 
       {loading ? <LoadingSpinner /> : (
         <>
+          {activeTab === 'appointments' && (
+            <div className="card">
+              <div className="card-header-custom">
+                <h3>Citas por estado</h3>
+                <span className="badge-status badge-scheduled">{totalAppointments} citas totales</span>
+              </div>
+              <div className="card-body-custom">
+                {statusData.length > 0 ? (
+                  <>
+                    <ReportChart data={statusData} labelKey="status" valueKey="count" label="Citas" />
+                    <div className="mt-3">
+                      <DataTable columns={statusColumns} data={statusData} emptyMessage="No hay datos de citas" />
+                    </div>
+                  </>
+                ) : <EmptyState message="No hay datos de citas para el período seleccionado" />}
+              </div>
+            </div>
+          )}
+
           {activeTab === 'doctors' && (
             <div className="card">
               <div className="card-header-custom">

@@ -5,12 +5,16 @@ import CreateAppointment from './pages/CreateAppointment'
 import Reports from './pages/Reports'
 import Doctors from './pages/Doctors'
 import Patients from './pages/Patients'
+import Offices from './pages/Offices'
+import Specialties from './pages/Specialties'
 
 const NAV_ITEMS = [
   { path: '/appointments', label: 'Citas', icon: '\u{1F4C5}' },
   { path: '/appointments/new', label: 'Nueva Cita', icon: '\u{2795}' },
   { path: '/doctors', label: 'Doctores', icon: '\u{1FA7A}' },
   { path: '/patients', label: 'Pacientes', icon: '\u{1F9D1}' },
+  { path: '/offices', label: 'Consultorios', icon: '\u{1F3E5}' },
+  { path: '/specialties', label: 'Especialidades', icon: '\u{1F9EC}' },
   { path: '/reports', label: 'Reportes', icon: '\u{1F4CA}' },
 ]
 
@@ -56,6 +60,8 @@ export default function App() {
           <Route path="/appointments/new" element={<CreateAppointment />} />
           <Route path="/doctors" element={<Doctors />} />
           <Route path="/patients" element={<Patients />} />
+          <Route path="/offices" element={<Offices />} />
+          <Route path="/specialties" element={<Specialties />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="*" element={
             <div className="empty-state">

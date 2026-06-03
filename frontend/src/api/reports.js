@@ -17,3 +17,6 @@ export const getNoShowPatients = (from, to, limit = 10) =>
 
 export const getSpecialties = () =>
   client.get('/specialties')
+
+export const getAppointmentsByStatus = (from, to) =>
+  client.get('/reports/appointments-by-status', { params: { from, to } })

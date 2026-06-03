@@ -1,6 +1,7 @@
 package edu.unimagdalena.reservas.api;
 
 import edu.unimagdalena.reservas.api.dto.request.CreateSpecialtyRequest;
+import edu.unimagdalena.reservas.api.dto.request.UpdateSpecialtyRequest;
 import edu.unimagdalena.reservas.api.dto.response.SpecialtyResponse;
 import edu.unimagdalena.reservas.services.SpecialtyService;
 import jakarta.validation.Valid;
@@ -28,5 +29,11 @@ public class SpecialtyController {
     @GetMapping
     public ResponseEntity<List<SpecialtyResponse>> list() {
         return ResponseEntity.ok(service.list());
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<SpecialtyResponse> update(@PathVariable Long id,
+                                                    @Valid @RequestBody UpdateSpecialtyRequest req) {
+        return ResponseEntity.ok(service.update(id, req));
     }
 }

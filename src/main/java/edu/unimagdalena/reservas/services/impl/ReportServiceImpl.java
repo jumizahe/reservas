@@ -1,5 +1,6 @@
 package edu.unimagdalena.reservas.services.impl;
 
+import edu.unimagdalena.reservas.api.dto.response.AppointmentStatusReport;
 import edu.unimagdalena.reservas.api.dto.response.DoctorProductivityResponse;
 import edu.unimagdalena.reservas.api.dto.response.NoShowPatientResponse;
 import edu.unimagdalena.reservas.api.dto.response.OfficeOccupancyResponse;
@@ -56,6 +57,16 @@ public class ReportServiceImpl implements ReportService {
                         (String) row[1],
                         (String) row[2],
                         ((Number) row[3]).longValue()))
+                .toList();
+    }
+
+    @Override
+    public List<AppointmentStatusReport> appointmentsByStatus(LocalDateTime from, LocalDateTime to) {
+        return appointmentRepo.countByStatus(from, to)
+                .stream()
+                .map(row -> new AppointmentStatusReport(
+                        row[0].toString(),
+                        ((Number) row[1]).longValue()))
                 .toList();
     }
 }

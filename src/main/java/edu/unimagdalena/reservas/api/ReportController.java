@@ -1,5 +1,6 @@
 package edu.unimagdalena.reservas.api;
 
+import edu.unimagdalena.reservas.api.dto.response.AppointmentStatusReport;
 import edu.unimagdalena.reservas.api.dto.response.DoctorProductivityResponse;
 import edu.unimagdalena.reservas.api.dto.response.NoShowPatientResponse;
 import edu.unimagdalena.reservas.api.dto.response.OfficeOccupancyResponse;
@@ -41,5 +42,12 @@ public class ReportController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
             @RequestParam(defaultValue = "10") int limit) {
         return ResponseEntity.ok(service.topNoShowPatients(from, to, limit));
+    }
+
+    @GetMapping("/appointments-by-status")
+    public ResponseEntity<List<AppointmentStatusReport>> appointmentsByStatus(
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to) {
+        return ResponseEntity.ok(service.appointmentsByStatus(from, to));
     }
 }
